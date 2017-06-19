@@ -1,0 +1,162 @@
+﻿@model dynamic
+
+@{
+    ViewBag.Title = "CreateRental";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>CreateRental</h2>
+
+<form id="createRental">
+    <div class="form-group">
+        <label>Customer</label>
+        <div class="tt-container">
+            <input id="customer" name="customer" type="text" value="" class="form-control" data-rule-checkCustomer="true" required />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Movie</label>
+        <div class="tt-container">
+            <input id="movie" name="movie" type="text" value="" class="form-control" data-rule-checkMovie="true" required />
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4 col-sm-4">
+            <ul id="movieList" class="list-group">
+        
+            </ul>
+        </div>
+    </div>
+   
+
+    <button class="btn btn-primary">Submit</button>
+</form>
+
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"/>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        
+        $(document).ready(function() {
+            var vm = {
+                movieid: []
+            };
+
+            $("#customer").autocomplete({
+                minLength: 1,
+                source: function(request, response) {
+                    $.ajax({
+                        url: "/api/Customer",
+                        data: {
+                            term: $("#customer").val()
+                        },
+                        dataType: "json",
+                        success: function(data) {
+                            response($.map(data,
+                            function(obj) {
+                                return {
+                                    value: obj.customerName,
+                                    cid: obj.id
+                                };
+                            }));
+                        }
+
+                    });
+                },
+                select: function(event, ui) {
+                    vm.customerid = ui.item.cid;
+                }
+            }).data('ui-autocomplete')._renderItem = function(ul, item) {
+                return $("<li></li>")
+                    .data("item.autocomplete", item)
+                    .append(item.value)
+                    .appendTo(ul);
+            };
+
+            //Populating Movies
+            $("#movie").autocomplete({
+                minLength: 1,
+                source: function(request, response) {
+                    $.ajax({
+                        url: "/api/movies",
+                        data: {
+                            term: $("#movie").val()
+                        },
+                        dataType: "json",
+                        success: function(data) {
+                            response($.map(data,
+                            function(obj) {
+                                return {
+                                    value: obj.movieName,
+                                    mid: obj.id
+                                };
+                            }));
+                        }
+
+                    });
+                },
+                select: function(event, ui) {
+                    vm.movieid.push(ui.item.mid);
+                    //alert(vm.movieIds.length);
+                    $("#movie").val("");
+                    $("#movieList").append("<li class='list-group-item'>" + ui.item.value + "</li>");
+                }
+            }).data('ui-autocomplete')._renderItem = function (ul, item) {
+                ul.addClass('list-group');
+                var list_item=$("<li></li>")
+                    .data("item.autocomplete", item)
+                    .append(item.value)
+                    .appendTo(ul);
+
+                list_item.addClass('list_group_item');
+                return list_item;
+            };
+
+            //Custom Validation. Remember that custom validation works only on fields which has name attribute.
+            $.validator.addMethod("checkCustomer", function () {
+                return vm.customerid && vm.customerid !== 0;
+            }, "Invalid customer ID");
+
+            $.validator.addMethod("checkMovie", function () {
+                return vm.movieid.length > 0;
+            }, "Invalid movie ID");
+
+            var validator=$("#createRental").validate({
+                submitHandler: function(){
+                    //e.preventDefault(); use this while you submit the form not from validator. Check the commented code below.
+                    $.ajax({
+                        url: '/api/movierental/',
+                        method: 'post',
+                        data: vm
+                    })
+                    .done(function () {
+                        toastr.success("Movie added successfully.");
+
+                        //Resetting the form when a movie is added
+                        $("#customer").val("");
+                        $("#movie").val("");
+                        $("#movieList").empty();
+
+                        vm = {movieid:[]};
+                        validator.resetForm();
+                    })
+                    .fail(function () {
+                        toastr.error("Invalid data found.");
+                    });
+
+                    return false;//This is stop the from from submitting normally
+                }                
+            });
+
+            //Use this method to submit the form, while you have all the validation done custom. YOu need to add prevent default to stop it from submitting normally
+            //$("#createRental").submit(function (e) {
+            //    e.preventDefault();
+            //});
+
+        });
+    </script>
+}

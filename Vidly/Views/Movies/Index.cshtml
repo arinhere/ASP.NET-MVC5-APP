@@ -1,0 +1,78 @@
+﻿@model IEnumerable<Vidly.Models.Movies>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Available Movies</h2>
+
+<table class="table" id="movies">
+    <thead>
+        <tr>
+            <th>
+                Movie Name
+            </th>
+            <th>
+                Genre
+            </th>
+            <th>
+                Stock
+            </th>
+            <th>Action</th>
+        </tr>
+    </thead>
+
+</table>
+    
+<div style="float: right">
+    @Html.ActionLink("Create New", "Create", null, new { @class = "btn btn-primary" })
+</div>
+
+
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+            var table=$("#movies").DataTable({
+                ajax: '/api/Movies',
+                type: "GET",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                sAjaxDataProp: "",
+                aoColumns: [
+                    {
+                        mData: "movieName",
+                        render: function(mData, type, movie) {
+                            return "<a href='/Movies/Details/" + movie.id + "'>" + movie.movieName + "</a>";
+                        }
+                    },
+                    { mData: "movieGenre.genre" },
+                    { mData: "inStock" },
+                    {
+                        mData: "id",
+                        render: function(mData, type, movie) {
+                            return "<button data-attr-id='" + movie.id + "' class='btn-link js-delete'>Delete</button >";
+                        }
+                    }
+                ]
+
+            });
+
+            $("#movies").on("click", ".js-delete", function () {
+                var button = $(this);
+                bootbox.confirm("Are you sure you want to delete this movie", function(result) {
+                    if (result) {
+                        $.ajax({
+                            url: "/api/Movies/" + button.attr("data-attr-id"),
+                            method: "Delete",
+                            success: function() {
+                                table.row(button.parents("tr")).remove().draw();
+                            } 
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}

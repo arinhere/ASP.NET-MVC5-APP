@@ -1,0 +1,53 @@
+﻿@model IEnumerable<Vidly.Models.Movies>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Available Movies</h2>
+
+<table class="table" id="movies">
+    <thead>
+        <tr>
+            <th>
+                Movie Name
+            </th>
+            <th>
+                Genre
+            </th>
+            <th>
+                Stock
+            </th>
+        </tr>
+    </thead>
+
+</table>
+    
+<div style="float: right">
+    @Html.ActionLink("Create New", "Create", null, new { @class = "btn btn-primary" })
+</div>
+
+
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+            var table=$("#movies").DataTable({
+                ajax: '/api/Movies',
+                type: "GET",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                sAjaxDataProp: "",
+                aoColumns: [
+                    {
+                        mData: "movieName"
+                    },
+                    { mData: "movieGenre.genre" },
+                    { mData: "inStock" }
+                ]
+
+            });
+        });
+    </script>
+}

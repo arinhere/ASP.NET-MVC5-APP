@@ -1,0 +1,23 @@
+﻿[
+  {
+    "id": 0,
+    "customerName": "Arya G",
+    "isSubscribedToNewsletter": true,
+    "membershipTypeId": 4,
+    "birthDate": null
+  },
+  {
+    "id": 0,
+    "customerName": "Pinki G",
+    "isSubscribedToNewsletter": false,
+    "membershipTypeId": 3,
+    "birthDate": null
+  },
+  {
+    "id": 0,
+    "customerName": "Amitava B",
+    "isSubscribedToNewsletter": true,
+    "membershipTypeId": 4,
+    "birthDate": null
+  }
+]

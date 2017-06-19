@@ -1,0 +1,87 @@
+﻿@using Vidly.Models
+@model IEnumerable<Vidly.Models.Customers>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Customers</h2>
+
+<table id="customers" class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>
+                Customer Name
+            </th>
+            <th>
+                MembershipType
+            </th>
+            <th>
+                Newsletter Subscription
+            </th>
+            <th>Action</th>
+        </tr>
+    </thead>
+</table>
+    
+<div style="float: right; padding-top: 10px">
+    @Html.ActionLink("Create New", "Create", null, new {@class="btn btn-primary"})
+</div>
+
+@section scripts
+{
+    <script>
+        $(document).ready(function() {
+            var table = $('#customers').DataTable({
+                ajax: "/api/Customer",
+                type: "GET",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                sAjaxDataProp: "",
+                aoColumns: [
+                    {
+                        mData: "customerName",
+                        render: function(mData, type, customer) {
+                            return "<a href='/Customers/Details/" + customer.id + "'>" + customer.customerName + "</a>";
+                        }
+                    },
+                    { mData: "membership.membershipType" },
+                    {
+                        mData: "isSubscribedToNewsletter",
+                        render: function(mData, type, customer) {
+                            if (customer.isSubscribedToNewsletter) {
+                                return "<input type='checkbox' disabled checked />";
+                            } else {
+                                return "<input type='checkbox' disabled />";
+                            }
+
+                        }
+                    },
+                    {
+                        mData: "id",
+                        render: function(mData, type, customer) {
+                            return "<button data-cust-id='"+ customer.id +"' class='btn-link js-delete'>Delete</button>";
+                        }
+                    }
+                ]
+            });
+
+            $("#customers").on("click", ".js-delete", function () {
+                var button = $(this);
+
+                bootbox.confirm("Are you sure you want to delete this customer?", function (result) {
+                    if (result) {
+                        $.ajax({
+                            url: "/api/Customer/" + button.attr("data-cust-id"),
+                            method: "DELETE",
+                            success: function () {
+                                table.row(button.parents("tr")).remove().draw();
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}
